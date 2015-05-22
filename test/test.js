@@ -64,11 +64,11 @@ module.exports = {
         
         test.doesNotThrow(function() {
             script.compile();
-        }, undefined, 'JsHtml failed while compilation');
+        }, undefined, 'JsHtml failed while compiling');
         
         test.doesNotThrow(function() {
             script.compileVM();
-        }, undefined, 'JsHtml failed while compilation into an executable function');
+        }, undefined, 'JsHtml failed while compiling into an executable function');
         
         test.doesNotThrow(function() {
             script.render();
@@ -100,7 +100,7 @@ module.exports = {
         
         test.throws(function() {
             Compiler('<?jscheck ?>');
-        }, undefined,  'Compiler failed to deliver a syntax error when missing whitespace after the beginning of a code block');
+        }, undefined,  'Compiler failed to deliver a syntax error when missing a whitespace after the beginning of a code block');
         
         test.doesNotThrow(function() {
             Compiler('<?js check?>');
@@ -149,6 +149,11 @@ module.exports = {
         }, undefined, 'JsHtml should allow new variables to be defined inside the global object context');
         
         test.strictEqual(script._executionContext.global.testing, script2._executionContext.global.testing, 'JsHtml should share the global context between scripts');
+        
+        script = new JsHtml();
+        script.loadBuffer('<?js process.stdout.write(\'check\'); ?>');
+        script.render();
+        test.equal(script.render(), 'check', 'The output buffer should be reset for each render. Could indicate a failure in/with calling the context reset callback.');
         
         test.done();
     }

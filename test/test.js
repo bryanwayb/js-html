@@ -17,7 +17,7 @@ module.exports = {
             Compiler();
             }, undefined, 'Compiler should throw error when no parameter is passed');
         test.equals(Compiler(''), '', 'Compiler should return an empty string when given an empty string');
-        test.equals(eval(Compiler('<?js "check" ?>')), 'check', 'Compiler should not inject code directly');
+        test.equals(eval(Compiler('<?js "check" ?>')), 'check', 'Compiler should not wrap code directly');
         
         test.doesNotThrow(function() {
             eval(Compiler(' \b')); // Creates a space, then takes it away (because it's evil like that, mwhahahaha). Prevents skewing of text formatting.
@@ -111,7 +111,7 @@ module.exports = {
             test.equals(Compiler('<?js' + tmpScript + '?>'), tmpScript);
         }, undefined, 'Compiler failed to properly parse valid JavaScript containing a string of HTML');
         
-        test.doesNotThrow(function() { // This is something that gets alot of parsers out there, false terminations. Is this fails there's likely something wrong with the JavaScript parser that's being used.
+        test.doesNotThrow(function() { // This is something that gets a lot of parsers out there, false terminations. Is this fails there's likely something wrong with the JavaScript parser that's being used.
             var tmpScript = ' console.log(\'This is how to terminate a code block: ?>\'); ';
             test.equals(Compiler('<?js' + tmpScript + '?>'), tmpScript);
         }, undefined, 'Compiler failed to properly parse valid JavaScript containing \'?>\' inside executable code');
@@ -119,12 +119,17 @@ module.exports = {
         test.throws(function() {
             Compiler('<?js console.log( -asdf; ?>');
         }, undefined,  'Compiler failed to recognize a syntax error');
+        
+        test.doesNotThrow(function() {
+            Compiler('<?js (function() { ?><?js })(); ?>');
+        }, undefined,  'Compiler failed to recognize a continuation of a block statement from a separate code block');
 
         test.done();
     },
     "Advanced JsHtml Testing": function(test) { // By now the basics have been checked: load, close, buffer, yada yada... Let's see what we can do to break the VM.
         var script = new JsHtml();
         
+        // NodeJS versions 0.6.3 to 0.11.6 will fail these context seperation tests. Obviously, that means there's a security vulnerability when ran on those versions.
         script.loadBuffer('<?js testing = \'env1\'; ?>');
         (script.compileVM())();
         
@@ -132,9 +137,18 @@ module.exports = {
         
         var script2 = new JsHtml();
         script2.loadBuffer('<?js ?>');
-        script2.compileVM();
+        (script2.compileVM())();
         
         test.notEqual(script._executionContext.testing, script2._executionContext.testing, 'JsHtml compiled scripts must not share a context with each other');
+        
+        test.notEqual(script._executionContext.global, undefined, 'JsHtml script contexts should provide a global variable that is shared between scripts');
+        
+        test.doesNotThrow(function() {
+            script.loadBuffer('<?js global.testing = \'check\'; ?>');
+            (script.compileVM())();
+        }, undefined, 'JsHtml should allow new variables to be defined inside the global object context');
+        
+        test.strictEqual(script._executionContext.global.testing, script2._executionContext.global.testing, 'JsHtml should share the global context between scripts');
         
         test.done();
     }

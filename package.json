@@ -1,6 +1,6 @@
 {
   "name": "jshtml",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Compile/render HTML documents blended with js",
   "main": "index.js",
   "directories": {

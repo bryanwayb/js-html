@@ -4,6 +4,8 @@ var jsHtmlModule = require("../lib/index.js");
 var JsHtml = jsHtmlModule.JsHtml;
 var Compiler = jsHtmlModule.Compiler;
 
+var testing = undefined; // Used in one of the tests
+
 module.exports = {
     "Initialization": function(test) { // Ensures we have access to the JsHtml object
         test.notStrictEqual(new JsHtml(), undefined, 'Failed to initialize JsHtml object');
@@ -97,11 +99,11 @@ module.exports = {
         }, undefined, 'Compiler failed to auto-close left open code block');
         
         test.throws(function() {
-            Compiler('<?check ?>');
+            Compiler('<?jscheck ?>');
         }, undefined,  'Compiler failed to deliver a syntax error when missing whitespace after the beginning of a code block');
         
         test.doesNotThrow(function() {
-            Compiler('<? check?>');
+            Compiler('<?js check?>');
         }, undefined,  'Compiler delivered a syntax error when code block terminated without whitespace separation');
         
         test.doesNotThrow(function() { // As I write this test, this should never happen, because there's no HTML parsing taking place. Only included this incase of future changes.
@@ -115,13 +117,25 @@ module.exports = {
         }, undefined, 'Compiler failed to properly parse valid JavaScript containing \'?>\' inside executable code');
         
         test.throws(function() {
-            Compiler('<? console.log( -asdf; ?>');
+            Compiler('<?js console.log( -asdf; ?>');
         }, undefined,  'Compiler failed to recognize a syntax error');
 
         test.done();
     },
-    "Advanced JsHtml Testing": function(test) { // By now the basic load, close, buffer, yada yada... Let's see what we can do to break the VM.
-        // TODO
+    "Advanced JsHtml Testing": function(test) { // By now the basics have been checked: load, close, buffer, yada yada... Let's see what we can do to break the VM.
+        var script = new JsHtml();
+        
+        script.loadBuffer('<?js testing = \'env1\'; ?>');
+        (script.compileVM())();
+        
+        test.notEqual(script._executionContext.testing, testing, 'JsHtml compiled scripts must not share a context with the calling process');
+        
+        var script2 = new JsHtml();
+        script2.loadBuffer('<?js ?>');
+        script2.compileVM();
+        
+        test.notEqual(script._executionContext.testing, script2._executionContext.testing, 'JsHtml compiled scripts must not share a context with each other');
+        
         test.done();
     }
 };

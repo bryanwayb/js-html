@@ -1,0 +1,27 @@
+{
+  "name": "jshtml",
+  "version": "0.1.2",
+  "description": "Compile/render HTML documents blended with js",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "esprima": ">=1.0.3"
+  },
+  "devDependencies": {
+    "nodeunit": "~0.9.1"
+  },
+  "scripts": {
+    "test": "node ./node_modules/nodeunit/bin/nodeunit"
+  },
+  "keywords": [
+    "jshtml",
+    "javascript",
+    "ecmascript",
+    "render",
+    "compiler"
+  ],
+  "author": "Bryan Way <bryanwayb@gmail.com>",
+  "license": "MIT"
+}

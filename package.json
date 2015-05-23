@@ -13,7 +13,7 @@
     "nodeunit": "~0.9.1"
   },
   "scripts": {
-    "test": "node ./node_modules/nodeunit/bin/nodeunit"
+    "test": "node ./node_modules/nodeunit/bin/nodeunit --reporter nested ./test/test.js"
   },
   "keywords": [
     "jshtml",
@@ -28,10 +28,9 @@
       "email": "bryanwayb@gmail.com"
     }
   ],
-  "repository" :
-  {
-    "type" : "git",
-    "url" : "https://github.com/bryanwayb/js-html.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bryanwayb/js-html.git"
   },
   "license": "MIT"
 }

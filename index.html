@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>JsHtml by bryanwayb</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">JsHtml</h1>
+      <h2 class="project-tagline">Blend server side JavaScript with HTML pages</h2>
+      <a href="https://github.com/bryanwayb/js-html" class="btn">View on GitHub</a>
+      <a href="https://github.com/bryanwayb/js-html/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/bryanwayb/js-html/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <p><a href="https://travis-ci.org/bryanwayb/js-html"><img src="https://img.shields.io/travis/bryanwayb/js-html.svg" alt="Build Status"></a> <a href="https://github.com/bryanwayb/js-html/releases"><img src="https://img.shields.io/github/release/bryanwayb/js-html.svg" alt="Release Version"></a> <a href="https://codecov.io/github/bryanwayb/js-html"><img src="https://img.shields.io/codecov/c/github/bryanwayb/js-html.svg" alt="Code Coverage"></a> <a href="https://www.codacy.com/app/bryanwayb/js-html"><img src="https://img.shields.io/codacy/d22a37360df842f9aeb3a9705379647a.svg" alt="Codacy Grade"></a> <a href="https://github.com/bryanwayb/js-html/blob/master/LICENSE"><img src="https://img.shields.io/github/license/bryanwayb/js-html.svg" alt="License"></a> </p>
+
+<p>A module for loading and compiling markup infused scripts.</p>
+
+<h1>
+<a id="library-use" class="anchor" href="#library-use" aria-hidden="true"><span class="octicon octicon-link"></span></a>Library Use</h1>
+
+<p>The <code>js-html</code>library has two main components, the <code>compile()</code> function and the <code>JsHtml</code> object.</p>
+
+<div class="highlight highlight-JavaScript"><pre><span class="pl-k">var</span> jsHtmlModule <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">"</span>js-html<span class="pl-pds">"</span></span>); <span class="pl-c">// Exports compile and JsHtml</span></pre></div>
+
+<h3>
+<a id="jshtml" class="anchor" href="#jshtml" aria-hidden="true"><span class="octicon octicon-link"></span></a>JsHtml</h3>
+
+<p>The <code>JsHtml</code> is the worker object, where most of the processing is performed. It's responsible for taking the output of <code>compile()</code> and putting it to work. (See below for <code>compile()</code> usage).</p>
+
+<p>The object is initialized with the following arguments:</p>
+
+<div class="highlight highlight-Javascript"><pre><span class="pl-k">new</span> <span class="pl-en">JsHtml</span>([filepath [, options]]);
+    <span class="pl-c">/*</span>
+<span class="pl-c">        options: {</span>
+<span class="pl-c">            encoding: "utf8"    // The encoding to use when working with Buffers</span>
+<span class="pl-c">        }</span>
+<span class="pl-c">    */</span></pre></div>
+
+<p>These are the functions that are available:</p>
+
+<div class="highlight highlight-Javascript"><pre>JsHtml.loadFile(filepath) <span class="pl-c">// Loads a file and prepares internal buffers for compilation</span>
+JsHtml.reloadFile() <span class="pl-c">// Forces the currently loaded file to be reloaded.</span>
+JsHtml.closeFile() <span class="pl-c">// Closes the current file and resets the internal buffer</span>
+JsHtml.loadBuffer(buffer) <span class="pl-c">// Load passed buffer (string or Buffer object)</span>
+JsHtml.<span class="pl-c1">reset</span>() <span class="pl-c">// Resets the internal buffer, compiled script, and VM context.</span>
+JsHtml.<span class="pl-c1">compile</span>() <span class="pl-c">// Actually compiles the code taking into account buffer source.</span>
+JsHtml.compileVM() <span class="pl-c">// Calls `JsHtml.compile()`, creates a security context model, and returns a VM function.</span>
+JsHtml.render() <span class="pl-c">// Compiles, loads, and executes the loaded buffer. Returns the rendered string.</span></pre></div>
+
+<h4>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h4>
+
+<p>The following will take an input script, compile and render it, then save the rendered version into an <code>.html</code> file.</p>
+
+<h5>
+<a id="indexjs" class="anchor" href="#indexjs" aria-hidden="true"><span class="octicon octicon-link"></span></a>index.js:</h5>
+
+<div class="highlight highlight-JavaScript"><pre><span class="pl-k">var</span> fs <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>fs<span class="pl-pds">'</span></span>),
+    JsHtml <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>js-html<span class="pl-pds">'</span></span>).JsHtml;
+
+<span class="pl-k">var</span> script <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">JsHtml</span>(<span class="pl-s"><span class="pl-pds">'</span>./script.jshtml<span class="pl-pds">'</span></span>);
+fs.writeFileSync(<span class="pl-s"><span class="pl-pds">'</span>./rendered.html<span class="pl-pds">'</span></span>, script.render());</pre></div>
+
+<h5>
+<a id="scriptjshtml" class="anchor" href="#scriptjshtml" aria-hidden="true"><span class="octicon octicon-link"></span></a>script.jshtml</h5>
+
+<div class="highlight highlight-HTML"><pre>&lt;<span class="pl-ent">html</span>&gt;
+    &lt;<span class="pl-ent">head</span>&gt;
+        &lt;<span class="pl-ent">title</span>&gt;Example JsHtml Page&lt;/<span class="pl-ent">title</span>&gt;
+    &lt;/<span class="pl-ent">head</span>&gt;
+    &lt;<span class="pl-ent">body</span>&gt;
+        &lt;<span class="pl-ent">h1</span>&gt;Example JsHtml Page&lt;/<span class="pl-ent">h1</span>&gt;
+        &lt;<span class="pl-ent">p</span>&gt;&lt;?js process.stdout.write('This is being written to the page via process.stdout.write()'); ?&gt;&lt;/<span class="pl-ent">p</span>&gt;
+    &lt;/<span class="pl-ent">body</span>&gt;
+&lt;/<span class="pl-ent">html</span>&gt;</pre></div>
+
+<h3>
+<a id="compile" class="anchor" href="#compile" aria-hidden="true"><span class="octicon octicon-link"></span></a>compile</h3>
+
+<p>The <code>compile()</code> function is used to transform plain text and inline code into a valid, executable JavaScript string. Here is a basic example:</p>
+
+<div class="highlight highlight-JavaScript"><pre><span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-c1">compile</span>(<span class="pl-s"><span class="pl-pds">"</span>A plain string of text<span class="pl-pds">"</span></span>));
+<span class="pl-c">// Output:</span>
+<span class="pl-c">//      process.stdout.write("A plain string of text");</span></pre></div>
+
+<p>The above example is pretty boring. To make things a bit more interesting, we can add sections of JavaScript code to be factored into the compilation. <code>Code blocks</code> are defined with the following syntax:</p>
+
+<ul>
+<li><code>&lt;?js /* JavaScript code goes here */ ?&gt;</code></li>
+<li><code>&lt;% /* More JavaScript code */ %&gt;</code></li>
+</ul>
+
+<p>Here's an example with a code block:</p>
+
+<div class="highlight highlight-Javascript"><pre><span class="pl-en">console</span><span class="pl-c1">.log</span>(
+    <span class="pl-c1">compile</span>(<span class="pl-s"><span class="pl-pds">"</span>Inline JavaScript Example: &lt;?js process.stdout.write('Generated inside JavaScript');<span class="pl-pds">"</span></span>)
+);
+<span class="pl-c">// Output:</span>
+<span class="pl-c">//      process.stdout.write('Inline JavaScript Example: '); process.stdout.write('Generated inside JavaScript');</span></pre></div>
+
+<p>The <code>compile()</code> execution path is fairly straightforward, code embeddable markup gets passed, compiled JavaScript is returned.</p>
+
+<hr>
+
+<h3>
+<a id="installing" class="anchor" href="#installing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installing</h3>
+
+<p><strong>npm</strong></p>
+
+<div class="highlight highlight-Bash"><pre>npm install js-html</pre></div>
+
+<p><strong>git</strong></p>
+
+<div class="highlight highlight-Bash"><pre>git clone https://github.com/bryanwayb/js-html.git
+<span class="pl-c1">cd</span> js-html
+npm install</pre></div>
+
+<h3>
+<a id="running-tests" class="anchor" href="#running-tests" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running Tests</h3>
+
+<p><code>js-html</code> has been configured for numerous tests to test compatibility with a specific JavaScript engine. If you would like to run these tests run the below command while in the modules root directory:</p>
+
+<div class="highlight highlight-Bash"><pre>npm <span class="pl-c1">test</span></pre></div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/bryanwayb/js-html">JsHtml</a> is maintained by <a href="https://github.com/bryanwayb">bryanwayb</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-44189065-3");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
+

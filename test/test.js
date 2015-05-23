@@ -2,7 +2,7 @@ var fs = require('fs');
 
 var jsHtmlModule = require("../lib/index.js");
 var JsHtml = jsHtmlModule.JsHtml;
-var Compiler = jsHtmlModule.Compiler;
+var Compiler = jsHtmlModule.compile;
 
 var testing = undefined; // Used in one of the tests
 

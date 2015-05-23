@@ -1,8 +1,8 @@
 {
-  "name": "jshtml",
-  "version": "0.1.3",
-  "description": "Compile/render HTML documents blended with js",
-  "main": "index.js",
+  "name": "js-html",
+  "version": "0.1.4",
+  "description": "Blend server side JavaScript with HTML pages",
+  "main": "lib/index.js",
   "directories": {
     "test": "test"
   },
@@ -17,11 +17,21 @@
   },
   "keywords": [
     "jshtml",
+    "js-html",
     "javascript",
     "ecmascript",
-    "render",
-    "compiler"
+    "html"
   ],
-  "author": "Bryan Way <bryanwayb@gmail.com>",
+  "contributors": [
+    {
+      "name": "Bryan Way",
+      "email": "bryanwayb@gmail.com"
+    }
+  ],
+  "repository" :
+  {
+    "type" : "git",
+    "url" : "https://github.com/bryanwayb/js-html.git"
+  },
   "license": "MIT"
 }

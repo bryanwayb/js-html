@@ -89,8 +89,8 @@ module.exports = {
         }, undefined, 'Compiler failed to parse an immediately closed code block tag');
         
         test.doesNotThrow(function() {
-            test.equals(Compiler('<?js %>'), ' ');
-            test.equals(Compiler('<% ?>'), ' ');
+            test.equals(Compiler('<?js %>'), '');
+            test.equals(Compiler('<% ?>'), '');
         }, undefined, 'Compiler failed to close inverted code block tags');
         
         test.doesNotThrow(function() {
@@ -98,22 +98,21 @@ module.exports = {
             test.equals(Compiler('<%'), '');
         }, undefined, 'Compiler failed to auto-close left open code block');
         
-        test.throws(function() {
-            Compiler('<?jscheck ?>');
-        }, undefined,  'Compiler failed to deliver a syntax error when missing a whitespace after the beginning of a code block');
+        // When testing direct compiler output, remember that ending spaces are not trimmed. <?js ?> will return '', but <?js  ?> will return ' '. This is design, to prevent code like the next test checks for.
+        test.notEqual(Compiler('<?js"check" ?>'), '\"check\" ', 'Compiler failed to treat improperly opended code blocks as normal text');
         
         test.doesNotThrow(function() {
             Compiler('<?js check?>');
         }, undefined,  'Compiler delivered a syntax error when code block terminated without whitespace separation');
         
         test.doesNotThrow(function() { // As I write this test, this should never happen, because there's no HTML parsing taking place. Only included this incase of future changes.
-            var tmpScript = ' console.log(\'<script>document.write(\\"Testing here\\")</script>\'); ';
-            test.equals(Compiler('<?js' + tmpScript + '?>'), tmpScript);
+            var tmpScript = 'console.log(\'<script>document.write(\\"Testing here\\")</script>\'); ';
+            test.equals(Compiler('<?js ' + tmpScript + '?>'), tmpScript);
         }, undefined, 'Compiler failed to properly parse valid JavaScript containing a string of HTML');
         
         test.doesNotThrow(function() { // This is something that gets a lot of parsers out there, false terminations. Is this fails there's likely something wrong with the JavaScript parser that's being used.
-            var tmpScript = ' console.log(\'This is how to terminate a code block: ?>\'); ';
-            test.equals(Compiler('<?js' + tmpScript + '?>'), tmpScript);
+            var tmpScript = 'console.log(\'This is how to terminate a code block: ?>\'); ';
+            test.equals(Compiler('<?js ' + tmpScript + '?>'), tmpScript);
         }, undefined, 'Compiler failed to properly parse valid JavaScript containing \'?>\' inside executable code');
         
         test.throws(function() {

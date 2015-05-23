@@ -1,3 +1,5 @@
+[![Build Status](https://img.shields.io/travis/bryanwayb/js-html.svg)](https://travis-ci.org/bryanwayb/js-html) [![Release Version](https://img.shields.io/github/release/bryanwayb/js-html.svg)](https://github.com/bryanwayb/js-html/releases) [![Code Coverage](https://img.shields.io/codecov/c/github/bryanwayb/js-html.svg)](https://codecov.io/github/bryanwayb/js-html) [![Codacy Grade](https://img.shields.io/codacy/d22a37360df842f9aeb3a9705379647a.svg)](https://www.codacy.com/app/bryanwayb/js-html) [![License](https://img.shields.io/github/license/bryanwayb/js-html.svg)](https://github.com/bryanwayb/js-html/blob/master/LICENSE) 
+
 A module for loading and compiling markup infused scripts.
 
 #Library Use

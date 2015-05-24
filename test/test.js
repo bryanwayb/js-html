@@ -48,6 +48,10 @@ module.exports = {
         script.loadBuffer(new Buffer('check'));
         test.equal(script._buffer, 'check', 'JsHtml.prototype.loadBuffer should be able to accept Buffer objects');
         
+        test.throws(function() {
+            script.loadFile();
+        }, undefined, 'JsHtml failed to throw an exception calling loadFile without a parameter');
+        
         test.doesNotThrow(function() {
             script.loadFile('./test/docs/01.basic.jshtml');
         }, undefined, 'JsHtml failed while loading ./test/docs/01.basic.jshtml');
@@ -153,9 +157,17 @@ module.exports = {
         test.strictEqual(script._executionContext.global.testing, script2._executionContext.global.testing, 'JsHtml should share the global context between scripts');
         
         script = new JsHtml();
-        script.loadBuffer('<?js process.stdout.write(\'check\'); ?>');
+        script.loadBuffer('<?js:\'check\'?>');
         script.render();
-        test.equal(script.render(), 'check', 'The output buffer should be reset for each render. Could indicate a failure in/with calling the context reset callback.');
+        test.equal(script.render(), 'check', 'The output rendering did not return the expected output');
+        
+        test.equal(script.render(), 'check', 'The output buffer should be reset for each render. Failure of only this test could indicate a failure in/with calling the context reset callback.');
+        
+        test.throws(function() {
+            // As I write this it's not possible to load the process object like this. As far as I know this would be possible to be done in the future, and would be a security threat if allowed.
+            script.loadBuffer('<?js var p = require(\'process\'); ?>');
+            script.execute();
+        }, undefined, 'This version of NodeJS allows for \'require()\' to dynamically load the \'process\' object.'); // If this ever fails, we could bypass it by writting a custom require function for JsHtml contexts.
         
         test.done();
     },

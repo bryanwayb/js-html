@@ -121,10 +121,10 @@ module.exports = {
         
         test.doesNotThrow(function() {
             Compiler('<?js (function() { ?><?js })(); ?>');
-        }, undefined,  'Compiler failed to recognize a continuation of a block statement from a separate code block');
-        test.doesNotThrow(function() {
             Compiler('<?js (function() { ?><?js var test = undefined; ?><?js })(); ?>');
         }, undefined,  'Compiler failed to recognize a continuation of a block statement from a separate code block');
+        
+        test.notEqual(Compiler('<?js:testing?>', 'testing'), 'Compiler should not compile direct print code blocks as normal code');
 
         test.done();
     },
@@ -158,33 +158,32 @@ module.exports = {
         test.equal(script.render(), 'check', 'The output buffer should be reset for each render. Could indicate a failure in/with calling the context reset callback.');
         
         test.done();
-    }
-};
-
-module.exports.File = [];
-var fileList = fs.readdirSync('./test/docs/');
-for(var i = 0; i < fileList.length; i++) {
-    var filepath = './test/docs/' + fileList[i];
-    module.exports.File[filepath] = function(test) {
-        var script = new JsHtml();
-        test.doesNotThrow(function() {
-            script.loadFile(filepath);
-        }, undefined, '\'' + filepath + '\ failed to load');
-        
-        test.doesNotThrow(function() {
-            script.compile();
-        }, undefined, '\'' + filepath + '\ failed to compile');
-        
-        test.doesNotThrow(function() {
-            script.compileVM();
-        }, undefined, '\'' + filepath + '\ failed to compile to an executable function');
-        
-        test.doesNotThrow(function() {
-            script.render();
-        }, undefined, '\'' + filepath + '\ failed to render');
-        
-        script.closeFile();
+    },
+    "Files In ./test/docs/": function(test) {
+        var fileList = fs.readdirSync('./test/docs/');
+        for(var i = 0; i < fileList.length; i++) {
+            var filepath = './test/docs/' + fileList[i];
+            
+            var script = new JsHtml();
+            test.doesNotThrow(function() {
+                script.loadFile(filepath);
+            }, undefined, '\'' + filepath + '\ failed to load');
+            
+            test.doesNotThrow(function() {
+                script.compile();
+            }, undefined, '\'' + filepath + '\ failed to compile');
+            
+            test.doesNotThrow(function() {
+                script.compileVM();
+            }, undefined, '\'' + filepath + '\ failed to compile to an executable function');
+            
+            test.doesNotThrow(function() {
+                script.render();
+            }, undefined, '\'' + filepath + '\ failed to render');
+            
+            script.closeFile();
+        }
         
         test.done();
-    };
-}
+    }
+};

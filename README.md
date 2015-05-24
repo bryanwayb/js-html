@@ -2,6 +2,14 @@
 
 A module for loading and compiling markup infused scripts.
 
+```HTML
+<html>
+	<body><?js
+		process.stdout.write('Hello, World from JsHtml!');
+	?></body>
+</html>
+```
+
 #Library Use
 The `js-html `library has two main components, the `compile()` function and the `JsHtml` object.
 

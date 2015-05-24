@@ -122,6 +122,9 @@ module.exports = {
         test.doesNotThrow(function() {
             Compiler('<?js (function() { ?><?js })(); ?>');
         }, undefined,  'Compiler failed to recognize a continuation of a block statement from a separate code block');
+        test.doesNotThrow(function() {
+            Compiler('<?js (function() { ?><?js var test = undefined; ?><?js })(); ?>');
+        }, undefined,  'Compiler failed to recognize a continuation of a block statement from a separate code block');
 
         test.done();
     },
@@ -179,6 +182,9 @@ for(var i = 0; i < fileList.length; i++) {
         test.doesNotThrow(function() {
             script.render();
         }, undefined, '\'' + filepath + '\ failed to render');
-       test.done();
+        
+        script.closeFile();
+        
+        test.done();
     };
 }

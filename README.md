@@ -10,14 +10,16 @@ A module for loading and compiling markup infused scripts.
 </html>
 ```
 
-#Library Use
+Library Use
+=============
 The `js-html `library has two main components, the `compile()` function and the `JsHtml` object.
 
 ```JavaScript
 var jsHtmlModule = require("js-html"); // Exports compile and JsHtml
 ```
 
-###JsHtml
+JsHtml
+--
 The `JsHtml` is the worker object, where most of the processing is performed. It's responsible for taking the output of `compile()` and putting it to work. (See below for `compile()` usage).
 
 The object is initialized with the following arguments:
@@ -43,11 +45,11 @@ JsHtml.compile() // Actually compiles the code taking into account buffer source
 JsHtml.compileVM() // Calls `JsHtml.compile()`, creates a security context model, and returns a VM function.
 JsHtml.render() // Compiles, loads, and executes the loaded buffer. Returns the rendered string.
 ```
-####Example
+**Example**
 
 The following will take an input script, compile and render it, then save the rendered version into an `.html` file.
 
-#####index.js:
+*index.js:*
 ```JavaScript
 var fs = require('fs'),
 	JsHtml = require('js-html').JsHtml;
@@ -56,7 +58,7 @@ var script = new JsHtml('./script.jshtml');
 fs.writeFileSync('./rendered.html', script.render());
 ```
 
-#####script.jshtml
+*script.jshtml*
 ```HTML
 <html>
 	<head>
@@ -69,7 +71,8 @@ fs.writeFileSync('./rendered.html', script.render());
 </html>
 ```
 
-###compile
+compile
+--
 The `compile()` function is used to transform plain text and inline code into a valid, executable JavaScript string. Here is a basic example:
 
 ```JavaScript
@@ -97,8 +100,8 @@ The `compile()` execution path is fairly straightforward, code embeddable markup
 
 ****
 
-###Installing
-
+Installing
+==
 **npm**
 ```Bash
 npm install js-html
@@ -111,9 +114,12 @@ cd js-html
 npm install
 ```
 
-###Running Tests
+Running Tests
+==
 
-`js-html` has been configured for numerous tests to test compatibility with a specific JavaScript engine. If you would like to run these tests run the below command while in the modules root directory:
+`js-html` has been configured for numerous tests to test compatibility with a specific JavaScript engine. These test not only ensure basic functionality will be available, but also security in sepearation of contexts.
+
+If you would like to run these tests run the below command while in the modules root directory:
 
 ```Bash
 npm test

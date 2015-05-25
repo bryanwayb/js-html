@@ -161,13 +161,35 @@ module.exports = {
         script.render();
         test.equal(script.render(), 'check', 'The output rendering did not return the expected output');
         
-        test.equal(script.render(), 'check', 'The output buffer should be reset for each render. Failure of only this test could indicate a failure in/with calling the context reset callback.');
+        test.equal(script.render(), 'check', 'The output buffer should be reset for each render. Failure of only this test could indicate a failure in/with calling the context reset callback');
+        
+        test.done();
+    },
+    "JsHtml API Context Test": function(test) {
+        var script = new JsHtml();
         
         test.throws(function() {
             // As I write this it's not possible to load the process object like this. As far as I know this would be possible to be done in the future, and would be a security threat if allowed.
-            script.loadBuffer('<?js var p = require(\'process\'); ?>');
-            script.execute();
-        }, undefined, 'This version of NodeJS allows for \'require()\' to dynamically load the \'process\' object.'); // If this ever fails, we could bypass it by writting a custom require function for JsHtml contexts.
+            script.loadBuffer('<?js require(\'process\'); ?>');
+            (script.compileVM())();
+        }, undefined, 'This version of NodeJS allows for \'require()\' to dynamically load the \'process\' object'); // If this ever fails, we could bypass it by writting a custom require function for JsHtml contexts.
+        
+        test.doesNotThrow(function(test) {
+            script.loadBuffer('<?js require(\'os\'); ?>');
+            (script.compileVM())();
+        }, undefined, 'Unable to import the built-in NodeJS module \'os\'. This could indicate an error in the require() function');
+        
+        script.loadBuffer('<?js:require(\'os\').platform()');
+        test.equals(script.render(), require('os').platform(), 'API failed to import the \'os\' module that would be loaded in normal script context');
+        
+        script._executionContext.global.testTimeoutId = setTimeout(function() { });
+        script.loadBuffer('<?js clearTimeout(global.testTimeoutId);');
+        script._filepath = '/test/this/is/a/test.jshtml';
+        (script.compileVM())();
+        test.notEqual(script._executionContext.global.testTimeoutId._onTimeout, undefined, 'clearTimeout shim has failed to prevent clearing timeouts that were set in a separate context');
+        
+        test.equal(script._executionContext.__filename, '/test/this/is/a/test.jshtml', 'The __filename variable was not correctly set');
+        test.equal(script._executionContext.__dirname, '/test/this/is/a', 'The __dirname variable was not correctly set');
         
         test.done();
     },

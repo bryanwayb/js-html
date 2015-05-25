@@ -169,10 +169,9 @@ module.exports = {
         var script = new JsHtml();
         
         test.throws(function() {
-            // As I write this it's not possible to load the process object like this. As far as I know this would be possible to be done in the future, and would be a security threat if allowed.
-            script.loadBuffer('<?js require(\'process\'); ?>');
+            script.loadBuffer('<?js require(\'process\').uptime(); ?>');
             (script.compileVM())();
-        }, undefined, 'This version of NodeJS allows for \'require()\' to dynamically load the \'process\' object'); // If this ever fails, we could bypass it by writting a custom require function for JsHtml contexts.
+        }, undefined, 'This version of NodeJS allows for \'require()\' to dynamically load the \'process\' object');
         
         test.doesNotThrow(function(test) {
             script.loadBuffer('<?js require(\'os\'); ?>');
@@ -190,7 +189,12 @@ module.exports = {
         
         test.equal(script._executionContext.__filename, '/test/this/is/a/test.jshtml', 'The __filename variable was not correctly set');
         test.equal(script._executionContext.__dirname, '/test/this/is/a', 'The __dirname variable was not correctly set');
-        
+
+	script = new JsHtml(undefined, { context: { testing: 'check' } });
+	script.loadBuffer('<?js ?>');
+	(script.compileVM())();
+	test.equal(script._executionContext.testing, 'check', 'Failed to add additional variables to the executing scripts context');
+
         test.done();
     },
     "Files In ./test/docs/": function(test) {

@@ -28,7 +28,8 @@ The object is initialized with the following arguments:
 new JsHtml([filepath [, options]]);
     /*
         options: {
-            encoding: "utf8"    // The encoding to use when working with Buffers
+            encoding: "utf8",   // The encoding to use when working with Buffers
+            context: undefined	// An object containing additional variables to pass to the executing scripts context.
         }
     */
 ```

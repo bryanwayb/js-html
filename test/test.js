@@ -163,6 +163,16 @@ module.exports = {
         
         test.equal(script.render(), 'check', 'The output buffer should be reset for each render. Failure of only this test could indicate a failure in/with calling the context reset callback');
         
+        test.doesNotThrow(function() {
+            require('./docs/01.basic.jshtml');
+        }, undefined, 'Should be allowed to load .jshtml files using the require() function');
+        
+        test.doesNotThrow(function() {
+            script.loadBuffer('<?js require(\'./docs/01.basic.jshtml\');');
+            script._filepath = __filename; // Sets to take the identy of the executing script (test.js), but we really just need this for the directory.
+            (script.compileVM())();
+        }, undefined, 'Should be allowed to load .jshtml files using the require() function inside the JsHtml context');
+        
         test.done();
     },
     "JsHtml API Context Test": function(test) {

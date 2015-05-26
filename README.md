@@ -72,6 +72,14 @@ fs.writeFileSync('./rendered.html', script.render());
 </html>
 ```
 
+Once the main module is loaded, `.jshtml` files can also be loaded using the `require()` function, which returns a JsHtml script object.
+
+```JavaScript
+var script = require('example.jshtml');
+
+console.log(script.render());
+```
+
 compile
 --
 The `compile()` function is used to transform plain text and inline code into a valid, executable JavaScript string. Here is a basic example:

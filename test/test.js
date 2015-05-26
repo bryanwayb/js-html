@@ -168,11 +168,6 @@ module.exports = {
     "JsHtml API Context Test": function(test) {
         var script = new JsHtml();
         
-        test.throws(function() {
-            script.loadBuffer('<?js require(\'process\').uptime(); ?>');
-            (script.compileVM())();
-        }, undefined, 'This version of NodeJS allows for \'require()\' to dynamically load the \'process\' object');
-        
         test.doesNotThrow(function(test) {
             script.loadBuffer('<?js require(\'os\'); ?>');
             (script.compileVM())();

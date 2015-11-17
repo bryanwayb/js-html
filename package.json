@@ -9,6 +9,9 @@
   "devDependencies": {
     "nodeunit": "~0.9.1"
   },
+  "dependencies": {
+    "colors": "~1.1.2"
+  },
   "scripts": {
     "test": "node ./node_modules/nodeunit/bin/nodeunit --reporter nested ./test/test.js && npm run bench",
     "bench": "node ./test/benchmark.js"

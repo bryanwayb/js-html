@@ -6,9 +6,6 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {
-    "esprima": ">=1.0.3"
-  },
   "devDependencies": {
     "nodeunit": "~0.9.1"
   },

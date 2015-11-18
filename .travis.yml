@@ -8,4 +8,4 @@ node_js:
   - "5.0" 
 after_script:
   - npm install -g istanbul && npm install codecov.io
-  - istanbul cover ./node_modules/nodeunit/bin/nodeunit -- --reporter lcov && cat ./coverage/coverage.json | ./node_modules/codecov.io/bin/codecov.io.js
+  - istanbul cover ./node_modules/nodeunit/bin/nodeunit ./test/test.js -- --reporter lcov && cat ./coverage/coverage.json | ./node_modules/codecov.io/bin/codecov.io.js

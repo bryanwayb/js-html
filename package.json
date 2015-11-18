@@ -1,6 +1,6 @@
 {
   "name": "js-html",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Blend server side JavaScript with HTML pages",
   "main": "lib/index.js",
   "directories": {

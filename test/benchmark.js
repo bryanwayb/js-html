@@ -56,7 +56,7 @@ function runBench(script) {
 var fileList = fs.readdirSync('./test/docs/');
 for(var i = 0; i < fileList.length; i++) {
     var filepath = './test/docs/' + fileList[i];
-    var script = jshtml.JsHtml();
+    var script = jshtml.jsHtml();
 
     console.log(colors.bold(filepath));
 

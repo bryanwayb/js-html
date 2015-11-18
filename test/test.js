@@ -20,6 +20,7 @@ module.exports = {
             compile();
         }, undefined, 'Compiler should throw error when no parameter is passed');
         test.equals(compile(''), '', 'Compiler should return an empty string when given an empty string');
+        test.equals(compile(new Buffer(0)), '', 'Compiler should return an empty string when given an empty buffer');
         test.equals(vm.runInThisContext(compile('<?js "check" ?>')), 'check', 'Compiler should not wrap code directly');
 
         test.doesNotThrow(function() {

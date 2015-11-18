@@ -77,7 +77,10 @@ function recursiveCheckDirectory(dir) {
                     }
 
                     if(jscsFixableErrors > 0 && allowFix) {
-                        fs.writeFileSync(pathname, jscsChecker.fixString(fileContents).output);
+                        jscsChecker = new JSCS();
+                        jscsChecker.registerDefaultRules();
+                        jscsChecker.configure(jscsConfig);
+                        fs.writeFileSync(pathname, jscsChecker.fixString(fileContents, pathname).output);
                     }
 
                     if(!success) {

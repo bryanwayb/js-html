@@ -34,9 +34,9 @@ function printBench(name, results) {
 
 var fileList = fs.readdirSync('./test/docs/');
 for(var i = 0; i < fileList.length; i++) {
-	var filepath = './test/docs/' + fileList[i];
-	var script = new JsHtml();
-    
+    var filepath = './test/docs/' + fileList[i];
+    var script = new JsHtml();
+
     console.log(colors.bold(filepath));
 
     var fileContents = fs.readFileSync(filepath);
@@ -45,11 +45,11 @@ for(var i = 0; i < fileList.length; i++) {
     printBench('COMPILE', bench(function() {
         script.compile();
     }));
-    
+
     printBench('VM INIT', bench(function() {
         script.compileVM();
     }));
-    
+
     printBench('RENDER', bench(function() {
         script.render();
     }));

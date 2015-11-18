@@ -3,7 +3,9 @@ node_js:
   - "0.12"
   - "0.11"
   - "iojs"
-  - "iojs-v1.0.4" 
+  - "4.0"
+  - "4.1"
+  - "5.0" 
 after_script:
   - npm install -g istanbul && npm install codecov.io
   - istanbul cover ./node_modules/nodeunit/bin/nodeunit -- --reporter lcov && cat ./coverage/coverage.json | ./node_modules/codecov.io/bin/codecov.io.js

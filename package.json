@@ -7,14 +7,16 @@
     "test": "test"
   },
   "devDependencies": {
-    "nodeunit": "~0.9.1"
-  },
-  "dependencies": {
-    "colors": "~1.1.2"
+    "nodeunit": "~0.9.1",
+    "colors": "~1.1.2",
+    "jscs": "^2.5.1",
+    "jshint": "^2.8.0",
+    "minimist": "^1.2.0"
   },
   "scripts": {
-    "test": "node ./node_modules/nodeunit/bin/nodeunit --reporter nested ./test/test.js && npm run bench",
-    "bench": "node ./test/benchmark.js"
+    "test": "node ./node_modules/nodeunit/bin/nodeunit --reporter nested ./test/test.js && node ./test/check.js && node ./test/benchmark.js",
+    "bench": "node ./test/benchmark.js",
+    "fix": "node ./test/check.js --fix"
   },
   "keywords": [
     "jshtml",
@@ -32,6 +34,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/bryanwayb/js-html.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bryanwayb/servr/issues",
+    "email": "bryanwayb@gmail.com"
   },
   "license": "MIT"
 }

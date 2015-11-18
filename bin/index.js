@@ -1,6 +1,6 @@
-var jshtml = require('../lib/index.js'),
-	fs = require('fs'),
-	path = require('path');
+'use strict';
+
+var jshtml = require('../lib/index.js');
 
 console.log('|' + jshtml.compile('<?js?>') + '|');
 console.log('|' + jshtml.compile('<?js') + '|');

@@ -1,9 +1,16 @@
+'use strict';
+
 var fs = require('fs'),
     JsHtml = require('../lib/index.js').JsHtml,
     colors = require('colors');
 
 function bench(callback) { // Bench the absolute amount of cycles that are executed within a specified amount of time
-    var startTime, diffTime, i = 0, totalTime = 0, runTime = 1e9;
+    var startTime,
+        diffTime,
+        i = 0,
+        totalTime = 0,
+        runTime = 1e9;
+
     for(; totalTime < runTime; i++) {
         startTime = process.hrtime();
         callback();
@@ -32,16 +39,7 @@ function printBench(name, results) {
     console.log('  ' + name + ':\n   ->' + timeColor(Math.floor(results.timePerCycle)) + ' ns/cycle\n   ->' + timeColor(results.cycles) + ' cycles/s');
 }
 
-var fileList = fs.readdirSync('./test/docs/');
-for(var i = 0; i < fileList.length; i++) {
-    var filepath = './test/docs/' + fileList[i];
-    var script = new JsHtml();
-
-    console.log(colors.bold(filepath));
-
-    var fileContents = fs.readFileSync(filepath);
-    script.loadBuffer(fileContents.toString());
-
+function runBench(script) {
     printBench('COMPILE', bench(function() {
         script.compile();
     }));
@@ -53,4 +51,16 @@ for(var i = 0; i < fileList.length; i++) {
     printBench('RENDER', bench(function() {
         script.render();
     }));
+}
+
+var fileList = fs.readdirSync('./test/docs/');
+for(var i = 0; i < fileList.length; i++) {
+    var filepath = './test/docs/' + fileList[i];
+    var script = new JsHtml();
+
+    console.log(colors.bold(filepath));
+
+    var fileContents = fs.readFileSync(filepath);
+    script.loadBuffer(fileContents.toString());
+    runBench(script);
 }

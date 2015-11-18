@@ -1,35 +1,34 @@
-var fs = require('fs');
+'use strict';
+
+var fs = require('fs'),
+    vm = require('vm');
 
 var jsHtmlModule = require('../lib/index.js');
 var JsHtml = jsHtmlModule.JsHtml;
-var Compiler = jsHtmlModule.compile;
+var compile = jsHtmlModule.compile;
 
-var testing = undefined; // Used in one of the tests
+var testing; // Used in one of the tests
 
 module.exports = {
     Initialization: function(test) { // Ensures we have access to the JsHtml object
         test.notStrictEqual(new JsHtml(), undefined, 'Failed to initialize JsHtml object');
-        test.notStrictEqual(Compiler, undefined, 'Compiler function is not defined');
+        test.notStrictEqual(compile, undefined, 'Compiler function is not defined');
         test.done();
     },
     'Compiler Sanity Check': function(test) { // Perform basic functions, just to make sure we're all there in the head
         test.throws(function() {
-            Compiler();
+            compile();
         }, undefined, 'Compiler should throw error when no parameter is passed');
-        test.equals(Compiler(''), '', 'Compiler should return an empty string when given an empty string');
-        test.equals(eval(Compiler('<?js "check" ?>')), 'check', 'Compiler should not wrap code directly');
+        test.equals(compile(''), '', 'Compiler should return an empty string when given an empty string');
+        test.equals(vm.runInThisContext(compile('<?js "check" ?>')), 'check', 'Compiler should not wrap code directly');
 
         test.doesNotThrow(function() {
-            eval(Compiler(' \b')); // Creates a space, then takes it away (because it's evil like that, mwhahahaha). Prevents skewing of text formatting.
+            vm.runInThisContext(compile(' \b')); // Creates a space, then takes it away (because it's evil like that, mwhahahaha). Prevents skewing of text formatting.
         }, 'eval of a simple document failed. Compiler should use pre-existing API functions');
 
         test.done();
     },
     'JsHtml Sanity Check': function(test) { // To make sure our interfacing API works as designed
-        test.throws(function() {
-            new JsHtml('./non-existant-file');
-        }, undefined, 'JsHtml should throw an error when trying to load a file that does not exist');
-
         test.throws(function() {
             (new JsHtml()).reloadFile();
         }, undefined, 'JsHtml should throw an error when trying to reload a file when one has not been loaded');
@@ -88,32 +87,32 @@ module.exports = {
     },
     'Advanced Compiler Testing': function(test) { // Now for some fun, let's really try to break this thing.
         test.doesNotThrow(function() {
-            test.notEqual(Compiler('<?js?>'), '');
+            test.notEqual(compile('<?js?>'), '');
         }, undefined, 'Compiler failed to parse an immediately closed code block tag');
 
         test.doesNotThrow(function() {
-            test.equals(Compiler('<?js'), '');
+            test.equals(compile('<?js'), '');
         }, undefined, 'Compiler failed to auto-close left open code block');
 
         // When testing direct compiler output, remember that ending spaces are not trimmed. <?js ?> will return '', but <?js  ?> will return ' '. This is design, to prevent code like the next test checks for.
-        test.notEqual(Compiler('<?js"check" ?>'), '\"check\" ', 'Compiler failed to treat improperly opended code blocks as normal text');
+        test.notEqual(compile('<?js"check" ?>'), '\"check\" ', 'Compiler failed to treat improperly opended code blocks as normal text');
 
         test.doesNotThrow(function() { // As I write this test, this should never happen, because there's no HTML parsing taking place. Only included this incase of future changes.
             var tmpScript = 'console.log(\'<script>document.write(\\"Testing here\\")</script>\'); ';
-            test.equals(Compiler('<?js ' + tmpScript + '?>'), tmpScript);
+            test.equals(compile('<?js ' + tmpScript + '?>'), tmpScript);
         }, undefined, 'Compiler failed to properly parse valid JavaScript containing a string of HTML');
 
         test.doesNotThrow(function() { // This is something that gets a lot of parsers out there, false terminations. Is this fails there's likely something wrong with the JavaScript parser that's being used.
             var tmpScript = 'console.log(\'This is how to terminate a code block: ?>\'); ';
-            test.equals(Compiler('<?js ' + tmpScript + '?>'), tmpScript);
+            test.equals(compile('<?js ' + tmpScript + '?>'), tmpScript);
         }, undefined, 'Compiler failed to properly parse valid JavaScript containing \'?>\' inside executable code');
 
         test.doesNotThrow(function() {
-            Compiler('<?js (function() { ?><?js })(); ?>');
-            Compiler('<?js (function() { ?><?js var test = undefined; ?><?js })(); ?>');
+            compile('<?js (function() { ?><?js })(); ?>');
+            compile('<?js (function() { ?><?js var test = undefined; ?><?js })(); ?>');
         }, undefined, 'Compiler failed to recognize a continuation of a block statement from a separate code block');
 
-        test.notEqual(Compiler('<?js:testing?>', 'testing'), 'Compiler should not compile direct print code blocks as normal code');
+        test.notEqual(compile('<?js:testing?>', 'testing'), 'Compiler should not compile direct print code blocks as normal code');
 
         test.done();
     },
@@ -163,7 +162,7 @@ module.exports = {
     'JsHtml API Context Test': function(test) {
         var script = new JsHtml();
 
-        test.doesNotThrow(function(test) {
+        test.doesNotThrow(function() {
             script.loadBuffer('<?js require(\'os\'); ?>');
             (script.compileVM())();
         }, undefined, 'Unable to import the built-in NodeJS module \'os\'. This could indicate an error in the require() function');
@@ -187,11 +186,8 @@ module.exports = {
 
         test.done();
     },
-    "Files In ./test/docs/": function(test) {
-        var fileList = fs.readdirSync('./test/docs/');
-        for(var i = 0; i < fileList.length; i++) {
-            var filepath = './test/docs/' + fileList[i];
-
+    'Files In ./test/docs/': function(test) {
+        function testFile(filepath) {
             var script = new JsHtml();
             test.doesNotThrow(function() {
                 script.loadFile(filepath);
@@ -210,6 +206,11 @@ module.exports = {
             }, undefined, '\'' + filepath + '\ failed to render');
 
             script.closeFile();
+        }
+
+        var fileList = fs.readdirSync('./test/docs/');
+        for(var i = 0; i < fileList.length; i++) {
+            testFile('./test/docs/' + fileList[i]);
         }
 
         test.done();

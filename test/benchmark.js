@@ -56,11 +56,9 @@ function runBench(script) {
 var fileList = fs.readdirSync('./test/docs/');
 for(var i = 0; i < fileList.length; i++) {
     var filepath = './test/docs/' + fileList[i];
-    var script = jshtml.jsHtml();
+    var script = jshtml.script();
 
     console.log(colors.bold(filepath));
-
-    var fileContents = fs.readFileSync(filepath);
-    script.setScript(fileContents.toString());
+    script.setScriptFile(filepath);
     runBench(script);
 }

@@ -1,197 +1,185 @@
 'use strict';
 
 var fs = require('fs'),
-    vm = require('vm');
-
-var jsHtmlModule = require('../lib/index.js');
-var JsHtml = jsHtmlModule.JsHtml;
-var compile = jsHtmlModule.compile;
+    vm = require('vm'),
+    jsHtml = require('../lib/index.js');
 
 var testing; // Used in one of the tests
 
 module.exports = {
-    Initialization: function(test) { // Ensures we have access to the JsHtml object
-        test.notStrictEqual(new JsHtml(), undefined, 'Failed to initialize JsHtml object');
-        test.notStrictEqual(compile, undefined, 'Compiler function is not defined');
+    'API Access': function(test) { // Ensures we have access to the JsHtml API
+        test.notStrictEqual(jsHtml.script, undefined, 'jsHtml.script function is not defined');
+
+        var script = jsHtml.script();
+        test.notStrictEqual(script.setScript, undefined, 'script.setScript function is not defined');
+        test.notStrictEqual(script.setScriptFile, undefined, 'script.setScriptFile function is not defined');
+        test.notStrictEqual(script.clear, undefined, 'script.clear function is not defined');
+        test.notStrictEqual(script.compile, undefined, 'script.compile function is not defined');
+        test.notStrictEqual(script.makeFunction, undefined, 'script.makeFunction function is not defined');
+        test.notStrictEqual(script.render, undefined, 'script.render function is not defined');
+
+        test.notStrictEqual(jsHtml.compile, undefined, 'jsHtml.compile function is not defined');
+        test.notStrictEqual(jsHtml.cached, undefined, 'jsHtml.cached function is not defined');
+        test.notStrictEqual(jsHtml.render, undefined, 'jsHtml.render function is not defined');
         test.done();
     },
     'Compiler Sanity Check': function(test) { // Perform basic functions, just to make sure we're all there in the head
         test.throws(function() {
-            compile();
+            jsHtml.compile();
         }, undefined, 'Compiler should throw error when no parameter is passed');
-        test.equals(compile(''), '', 'Compiler should return an empty string when given an empty string');
-        test.equals(compile(new Buffer(0)), '', 'Compiler should return an empty string when given an empty buffer');
-        test.equals(vm.runInThisContext(compile('<?js "check" ?>')), 'check', 'Compiler should not wrap code directly');
+        test.equals(jsHtml.compile(''), '', 'Compiler should return an empty string when given an empty string');
+        test.equals(jsHtml.compile(new Buffer(0)), '', 'Compiler should return an empty string when given an empty buffer');
+        test.equals(vm.runInThisContext(jsHtml.compile('<?js "check" ?>')), 'check', 'Compiler should not wrap code directly');
 
         test.doesNotThrow(function() {
-            vm.runInThisContext(compile(' \b')); // Creates a space, then takes it away (because it's evil like that, mwhahahaha). Prevents skewing of text formatting.
+            vm.runInThisContext(jsHtml.compile(' \b')); // Creates a space, then takes it away (because it's evil like that, mwhahahaha). Prevents skewing of text formatting.
         }, 'eval of a simple document failed. Compiler should use pre-existing API functions');
 
         test.done();
     },
     'JsHtml Sanity Check': function(test) { // To make sure our interfacing API works as designed
-        test.throws(function() {
-            (new JsHtml()).reloadFile();
-        }, undefined, 'JsHtml should throw an error when trying to reload a file when one has not been loaded');
+        var script = jsHtml.script('check');
+        test.equal(typeof script._script, 'string', 'JsHtml should have an internal string (better performance than using Buffer object)');
+
+        script.setScript('anothercheck');
+        test.equal(script._script, 'anothercheck', 'JsHtml should not concatenate buffers');
+
+        script.setScript(new Buffer('check'));
+        test.equal(script._script, 'check', 'JsHtml.prototype.setScript should be able to accept/convert Buffer objects');
 
         test.throws(function() {
-            (new JsHtml()).closeFile();
-        }, undefined, 'JsHtml should throw an error when trying to close a file when one has not been loaded');
-
-        var script = new JsHtml();
-        script.loadBuffer('check');
-        test.equal(script._buffer, 'check', 'JsHtml should have an internal string based buffer (better performance than using binary)');
-
-        script.loadBuffer('anothercheck');
-        test.equal(script._buffer, 'anothercheck', 'JsHtml should not concatenate buffers');
-
-        script.loadBuffer(new Buffer('check'));
-        test.equal(script._buffer, 'check', 'JsHtml.prototype.loadBuffer should be able to accept Buffer objects');
-
-        test.throws(function() {
-            script.loadFile();
-        }, undefined, 'JsHtml failed to throw an exception calling loadFile without a parameter');
+            script.setScriptFile();
+        }, undefined, 'JsHtml failed to throw an exception calling setScriptFile without a parameter');
 
         test.doesNotThrow(function() {
-            script.loadFile('./test/docs/01.basic.jshtml');
+            script.setScriptFile('./test/docs/01.basic.jshtml');
         }, undefined, 'JsHtml failed while loading ./test/docs/01.basic.jshtml');
 
-        test.doesNotThrow(function() {
-            script.reloadFile();
-        }, undefined, 'JsHtml failed while reloading the file');
-
-        test.doesNotThrow(function() {
-            script.closeFile();
-        }, undefined, 'JsHtml failed while closing the file');
-
-        script.loadBuffer('<html><body>Testing Content Here</body></html>');
+        script.setScript('<html><body>Testing Content Here</body></html>');
 
         test.doesNotThrow(function() {
             script.compile();
         }, undefined, 'JsHtml failed while compiling');
 
         test.doesNotThrow(function() {
-            script.compileVM();
+            script.makeFunction();
         }, undefined, 'JsHtml failed while compiling into an executable function');
 
         test.doesNotThrow(function() {
             script.render();
         }, undefined, 'JsHtml failed while rendering');
 
-        script.reset();
-        test.strictEqual(script._buffer, undefined, 'JsHtml.prototype.reset should clear the internal buffer');
-        test.strictEqual(script._filepath, undefined, 'JsHtml.prototype.reset should clear the loaded files path');
-        test.strictEqual(script._vmCompiled, undefined, 'JsHtml.prototype.reset should clear the compiled VM function');
-        test.strictEqual(script._executionContext, undefined, 'JsHtml.prototype.reset should clear the compiled VM context');
+        script.clear();
+        test.strictEqual(script._script, undefined, 'script.clear() should clear the internal script string');
+        test.strictEqual(script._function, undefined, 'script.clear() should clear the compiled VM function');
+        test.strictEqual(script._context, undefined, 'script.clear() should clear the VM context');
 
         test.done();
     },
     'Advanced Compiler Testing': function(test) { // Now for some fun, let's really try to break this thing.
         test.doesNotThrow(function() {
-            test.notEqual(compile('<?js?>'), '');
+            test.notEqual(jsHtml.compile('<?js?>'), '');
         }, undefined, 'Compiler failed to parse an immediately closed code block tag');
 
         test.doesNotThrow(function() {
-            test.equals(compile('<?js'), '');
+            test.equals(jsHtml.compile('<?js'), '');
         }, undefined, 'Compiler failed to auto-close left open code block');
 
         // When testing direct compiler output, remember that ending spaces are not trimmed. <?js ?> will return '', but <?js  ?> will return ' '. This is design, to prevent code like the next test checks for.
-        test.notEqual(compile('<?js"check" ?>'), '\"check\" ', 'Compiler failed to treat improperly opended code blocks as normal text');
+        test.notEqual(jsHtml.compile('<?js"check" ?>'), '\"check\" ', 'Compiler failed to treat improperly opended code blocks as normal text');
 
         test.doesNotThrow(function() { // As I write this test, this should never happen, because there's no HTML parsing taking place. Only included this incase of future changes.
             var tmpScript = 'console.log(\'<script>document.write(\\"Testing here\\")</script>\'); ';
-            test.equals(compile('<?js ' + tmpScript + '?>'), tmpScript);
+            test.equals(jsHtml.compile('<?js ' + tmpScript + '?>'), tmpScript);
         }, undefined, 'Compiler failed to properly parse valid JavaScript containing a string of HTML');
 
         test.doesNotThrow(function() { // This is something that gets a lot of parsers out there, false terminations. Is this fails there's likely something wrong with the JavaScript parser that's being used.
             var tmpScript = 'console.log(\'This is how to terminate a code block: ?>\'); ';
-            test.equals(compile('<?js ' + tmpScript + '?>'), tmpScript);
+            test.equals(jsHtml.compile('<?js ' + tmpScript + '?>'), tmpScript);
         }, undefined, 'Compiler failed to properly parse valid JavaScript containing \'?>\' inside executable code');
 
         test.doesNotThrow(function() {
-            compile('<?js (function() { ?><?js })(); ?>');
-            compile('<?js (function() { ?><?js var test = undefined; ?><?js })(); ?>');
+            jsHtml.compile('<?js (function() { ?><?js })(); ?>');
+            jsHtml.compile('<?js (function() { ?><?js var test = undefined; ?><?js })(); ?>');
         }, undefined, 'Compiler failed to recognize a continuation of a block statement from a separate code block');
 
-        test.notEqual(compile('<?js:testing?>', 'testing'), 'Compiler should not compile direct print code blocks as normal code');
+        test.notEqual(jsHtml.compile('<?js:testing?>', 'testing'), 'Compiler should not compile direct print code blocks as normal code');
 
         test.done();
     },
     'Advanced JsHtml Testing': function(test) { // By now the basics have been checked: load, close, buffer, yada yada... Let's see what we can do to break the VM.
-        var script = new JsHtml();
+        var globalObject = { };
+        var context = {
+            global: globalObject
+        };
 
+        var script = jsHtml.script('<?js testing = \'env1\'; ?>', { context: context });
         // NodeJS versions 0.6.3 to 0.11.6 will fail these context seperation tests. Obviously, that means there's a security vulnerability when ran on those versions.
-        script.loadBuffer('<?js testing = \'env1\'; ?>');
-        (script.compileVM())();
+        (script.makeFunction())();
 
-        test.notEqual(script._executionContext.testing, testing, 'JsHtml compiled scripts must not share a context with the calling process');
+        test.notEqual(script._context.testing, testing, 'JsHtml compiled scripts must not share a context with the calling process');
 
-        var script2 = new JsHtml();
-        script2.loadBuffer('<?js ?>');
-        (script2.compileVM())();
+        var script2 = jsHtml.script('<?js ?>', { context: context });
+        (script2.makeFunction())();
 
-        test.notEqual(script._executionContext.testing, script2._executionContext.testing, 'JsHtml compiled scripts must not share a context with each other');
+        test.notEqual(script._context.testing, script2._context.testing, 'JsHtml compiled scripts must not share a context with each other');
 
-        test.notEqual(script._executionContext.global, undefined, 'JsHtml script contexts should provide a global variable that is shared between scripts');
+        test.notEqual(script._context.global, undefined, 'JsHtml script context was not loaded from passed options');
 
         test.doesNotThrow(function() {
-            script.loadBuffer('<?js global.testing = \'check\'; ?>');
-            (script.compileVM())();
+            script.setScript('<?js global.testing = \'check\'; ?>');
+            (script.makeFunction())();
         }, undefined, 'JsHtml should allow new variables to be defined inside the global object context');
 
-        test.strictEqual(script._executionContext.global.testing, script2._executionContext.global.testing, 'JsHtml should share the global context between scripts');
+        test.strictEqual(script._context.global.testing, script2._context.global.testing, 'JsHtml should share the global context between scripts');
 
-        script = new JsHtml();
-        script.loadBuffer('<?js:\'check\'?>');
-        script.render();
+        script = jsHtml.script('<?js:\'check\'?>');
         test.equal(script.render(), 'check', 'The output rendering did not return the expected output');
-
         test.equal(script.render(), 'check', 'The output buffer should be reset for each render. Failure of only this test could indicate a failure in/with calling the context reset callback');
 
         test.doesNotThrow(function() {
             require('./docs/01.basic.jshtml');
         }, undefined, 'Should be allowed to load .jshtml files using the require() function');
 
+        script = jsHtml.script('<?js require(\'./docs/01.basic.jshtml\');', { filename: __filename });
         test.doesNotThrow(function() {
-            script.loadBuffer('<?js require(\'./docs/01.basic.jshtml\');');
-            script._filepath = __filename; // Sets to take the identy of the executing script (test.js), but we really just need this for the directory.
-            (script.compileVM())();
+            (script.makeFunction())();
         }, undefined, 'Should be allowed to load .jshtml files using the require() function inside the JsHtml context');
 
         test.done();
     },
     'JsHtml API Context Test': function(test) {
-        var script = new JsHtml();
+        var globalObject = { };
+        var context = {
+            global: globalObject
+        };
+
+        var script = jsHtml.script({ context: context,
+ filename: '/test/this/is/a/test.jshtml' });
 
         test.doesNotThrow(function() {
-            script.loadBuffer('<?js require(\'os\'); ?>');
-            (script.compileVM())();
+            script.setScript('<?js require(\'os\'); ?>');
+            (script.makeFunction())();
         }, undefined, 'Unable to import the built-in NodeJS module \'os\'. This could indicate an error in the require() function');
 
-        script.loadBuffer('<?js:require(\'os\').platform()');
+        script.setScript('<?js:require(\'os\').platform()');
         test.equals(script.render(), require('os').platform(), 'API failed to import the \'os\' module that would be loaded in normal script context');
 
-        script._executionContext.global.testTimeoutId = setTimeout(function() { });
-        script.loadBuffer('<?js clearTimeout(global.testTimeoutId);');
-        script._filepath = '/test/this/is/a/test.jshtml';
-        (script.compileVM())();
-        test.notEqual(script._executionContext.global.testTimeoutId._onTimeout, undefined, 'clearTimeout shim has failed to prevent clearing timeouts that were set in a separate context');
+        script._context.global.testTimeoutId = setTimeout(function() { });
+        script.setScript('<?js clearTimeout(global.testTimeoutId);');
+        (script.makeFunction())();
+        test.notEqual(script._context.global.testTimeoutId._onTimeout, undefined, 'clearTimeout shim has failed to prevent clearing timeouts that were set in a separate context');
 
-        test.equal(script._executionContext.__filename, '/test/this/is/a/test.jshtml', 'The __filename variable was not correctly set');
-        test.equal(script._executionContext.__dirname, '/test/this/is/a', 'The __dirname variable was not correctly set');
-
-        script = new JsHtml(undefined, { context: { testing: 'check' } });
-        script.loadBuffer('<?js ?>');
-        (script.compileVM())();
-        test.equal(script._executionContext.testing, 'check', 'Failed to add additional variables to the executing scripts context');
+        test.equal(script._context.__filename, '/test/this/is/a/test.jshtml', 'The __filename variable was not correctly set');
+        test.equal(script._context.__dirname, '/test/this/is/a', 'The __dirname variable was not correctly set');
 
         test.done();
     },
     'Files In ./test/docs/': function(test) {
         function testFile(filepath) {
-            var script = new JsHtml();
+            var script = jsHtml.script();
             test.doesNotThrow(function() {
-                script.loadFile(filepath);
+                script.setScriptFile(filepath);
             }, undefined, '\'' + filepath + '\ failed to load');
 
             test.doesNotThrow(function() {
@@ -199,14 +187,12 @@ module.exports = {
             }, undefined, '\'' + filepath + '\ failed to compile');
 
             test.doesNotThrow(function() {
-                script.compileVM();
+                script.makeFunction();
             }, undefined, '\'' + filepath + '\ failed to compile to an executable function');
 
             test.doesNotThrow(function() {
                 script.render();
             }, undefined, '\'' + filepath + '\ failed to render');
-
-            script.closeFile();
         }
 
         var fileList = fs.readdirSync('./test/docs/');

@@ -1,7 +1,7 @@
 'use strict';
 
 var fs = require('fs'),
-    JsHtml = require('../lib/index.js').JsHtml,
+    jshtml = require('../lib/index.js'),
     colors = require('colors');
 
 function bench(callback) { // Bench the absolute amount of cycles that are executed within a specified amount of time
@@ -45,7 +45,7 @@ function runBench(script) {
     }));
 
     printBench('VM INIT', bench(function() {
-        script.compileVM();
+        script.makeFunction();
     }));
 
     printBench('RENDER', bench(function() {
@@ -56,11 +56,11 @@ function runBench(script) {
 var fileList = fs.readdirSync('./test/docs/');
 for(var i = 0; i < fileList.length; i++) {
     var filepath = './test/docs/' + fileList[i];
-    var script = new JsHtml();
+    var script = jshtml.JsHtml();
 
     console.log(colors.bold(filepath));
 
     var fileContents = fs.readFileSync(filepath);
-    script.loadBuffer(fileContents.toString());
+    script.setScript(fileContents.toString());
     runBench(script);
 }

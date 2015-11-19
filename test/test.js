@@ -175,6 +175,21 @@ module.exports = {
 
         test.done();
     },
+    'API Interface Use': function(test) {
+        test.doesNotThrow(function() {
+            var rendered = jsHtml.cached('test').render();
+            test.equal(jsHtml.cached('test').render(), rendered, 'jshtml.cache did not return the expected string from a basic call');
+            test.equal(jsHtml.cached('test', 'test').render(), rendered, 'jshtml.cache did not return the expected string from a call providing the cache name');
+            test.equal(jsHtml.cached('test', { context: { } }).render(), rendered, 'jshtml.cache did not return the expected string from a call providing options');
+            test.equal(jsHtml.cached('test', 'test', { context: { } }).render(), rendered, 'jshtml.cache did not return the expected string from a call providing the cache name and options');
+        }, undefined, 'Error while trying to use jshtml.cache');
+
+        test.doesNotThrow(function() {
+            test.equal(jsHtml.render('test', { context: { } }), 'test', 'jshtml.render did not return the expected string from a call');
+        }, undefined, 'Error while trying to use jshtml.render');
+
+        test.done();
+    },
     'Files In ./test/docs/': function(test) {
         function testFile(filepath) {
             var script = jsHtml.script();

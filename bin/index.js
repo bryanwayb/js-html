@@ -13,11 +13,12 @@ if(args.v || args.version) {
     process.stdout.write(helpout.version(npmPackage));
 }
 
-if(args.h || args.help || process.argv.length <= 2) {
+if(args.h || args.help || (process.argv.length <= 2 && process.stdin.isTTY)) {
     process.stdout.write(helpout.help({
         npmPackage: npmPackage,
         usage: [ // Can be either a string or an array of strings
-            '[options] [files]'
+            '[files] [options] .. or',
+            '[options] -- [files]'
         ],
         sections: {
             Options: {
@@ -63,11 +64,16 @@ var render = args.r || args.render,
     });
 
 function processScript() {
-    if(render) {
-        outputStream.write(script.render() + '\n');
+    try {
+        if(render) {
+            outputStream.write(script.render() + '\n');
+        }
+        else {
+            outputStream.write(beforeCompile + script.compile() + afterCompile + '\n');
+        }
     }
-    else {
-        outputStream.write(beforeCompile + script.compile() + afterCompile + '\n');
+    catch(ex) {
+        console.log(ex.toString());
     }
 }
 
@@ -83,12 +89,14 @@ process.stdin.on('readable', function() {
         buffer += chunk;
     }
     else {
-        if(len === 0) {
-            console.error('Error: No input files');
-            process.exit(1);
-        }
-        else {
-            process.exit();
+        if(!buffer) {
+            if(len === 0) {
+                console.error('Error: No input files');
+                process.exit(1);
+            }
+            else {
+                process.exit();
+            }
         }
     }
 });

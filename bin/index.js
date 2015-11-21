@@ -1,6 +1,98 @@
+#! /usr/bin/env node
 'use strict';
 
-var jshtml = require('../lib/index.js');
+var helpout = require('helpout'),
+    npmPackage = require('../package.json'),
+    jshtml = require('../lib/index.js'),
+    path = require('path'),
+    fs = require('fs');
 
-var script = jshtml.script('<?js console.log(this);');
-console.log(script.render());
+var args = require('minimist')(process.argv.slice(2));
+
+if(args.v || args.version) {
+    process.stdout.write(helpout.version(npmPackage));
+}
+
+if(args.h || args.help || process.argv.length <= 2) {
+    process.stdout.write(helpout.help({
+        npmPackage: npmPackage,
+        usage: [ // Can be either a string or an array of strings
+            '[options] [files]'
+        ],
+        sections: {
+            Options: {
+                options: {
+                    '-r, --render': 'Render the compiled output instead of stopping after compilation.',
+                    '-o, --out': 'Write output to file instead of stdout.',
+                    '--syntax': 'Enables syntax checking.',
+                    '--format': 'By default compiled code has no formatting applied. This switch enables formatting. Implies --syntax.',
+                    '--mangle': 'Turns on obfuscation for compiled code. Implies --format.',
+                    '--optimize': 'Enables compiled script optimization. Implies --format.',
+                    '--minify': 'Minify compiled output. Implies --mangle.',
+                    '-v, --version': 'Prints the version/author info in the output header',
+                    '-h, --help': 'Prints this help information.'
+                }
+            }
+        }
+    }));
+    process.exit();
+}
+
+var outputStream = process.stdout;
+var outputFile = args.o || args.out;
+if(outputFile && typeof outputFile === 'string') {
+    try {
+        outputStream = fs.createWriteStream(outputFile);
+    }
+    catch(ex) {
+        console.error('Unable to open output file ' + outputFile);
+    }
+}
+
+var render = args.r || args.render,
+    files = args._,
+    len = files.length,
+    beforeCompile = len > 1 ? '(function(){' : '',
+    afterCompile = len > 1 ? '})()' : '',
+    script = jshtml.script({
+        syntaxCheck: args.syntax || render || false,
+        format: args.format || false,
+        mangle: args.mangle || false,
+        optimize: args.optimize || false,
+        minify: args.minify || false
+    });
+
+function processScript() {
+    if(render) {
+        outputStream.write(script.render() + '\n');
+    }
+    else {
+        outputStream.write(beforeCompile + script.compile() + afterCompile + '\n');
+    }
+}
+
+for(var i = 0; i < len; i++) {
+    script.setScriptFile(path.resolve(process.cwd(), files[i]));
+    processScript();
+}
+
+var buffer = '';
+process.stdin.on('readable', function() {
+    var chunk = this.read();
+    if(chunk != null) {
+        buffer += chunk;
+    }
+    else {
+        if(len === 0) {
+            console.error('Error: No input files');
+            process.exit(1);
+        }
+        else {
+            process.exit();
+        }
+    }
+});
+process.stdin.on('end', function() {
+    script.setScript(buffer);
+    processScript();
+});

@@ -188,6 +188,13 @@ module.exports = {
             test.equal(jsHtml.render('test', { context: { } }), 'test', 'jshtml.render did not return the expected string from a call');
         }, undefined, 'Error while trying to use jshtml.render');
 
+        test.doesNotThrow(function() {
+            test.equal(jsHtml.render('<?js console.log("first statement"); function test(test) { process.stdout.write(test); } test("test string");', {
+                optimize: true,
+                minify: true
+            }), 'first statement\ntest string', 'jshtml options transformed the code incorrectly');
+        }, undefined, 'Error while trying to use jshtml options');
+
         test.done();
     },
     'Files In ./test/docs/': function(test) {

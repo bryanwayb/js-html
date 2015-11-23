@@ -16,7 +16,7 @@ if(args.v || args.version) {
 if(args.h || args.help || (process.argv.length <= 2 && process.stdin.isTTY)) {
     process.stdout.write(helpout.help({
         npmPackage: npmPackage,
-        usage: [ // Can be either a string or an array of strings
+        usage: [
             '[files] [options] .. or',
             '[options] -- [files]'
         ],

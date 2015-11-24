@@ -12,6 +12,12 @@ JavaScript template engine for mixing actual JavaScript and text/markup.
 ****
 Usage
 ==
+JsHtml script syntax is fairly straightforward.
+
+`<?js` opens a code block, `?>` closes it. A whitespace character *must* follow the opening tag, but it not required before the closing tag. (e.g. `<?jsvar test=0;?>` is invalid, but `<?js var test=0;?>` is okay).
+
+When a code block is only going to be used to output a variable you can use `<?js: ?>` syntax. Everything contained inside one of these blocks is directly passed to the output function. Spaces are *not required* for this open tag since `:` is used to separate the `<?js`tag and the code block.
+
 There are a few different methods provided of interfacing with JsHtml scripts. Here's one way showing a quick example of the engine is use:
 
 Template
@@ -19,11 +25,10 @@ Template
 ```html
 <html>
 	<head>
-		<title>Example</title>
+		<title><?js:title?></title>
 	<head>
 	<body>
-		<ul>
-			<?js
+		<ul><?js
 				for(var i = 0; i < 10; i++) {
 					?>
 						<li>#<?js:i?></li><?js
@@ -38,7 +43,11 @@ Script
 ```javascript
 var jshtml = require('js-html');
 
-var script = jshtlm.script();
+var script = jshtml.script({
+	context: {
+		title: 'Example'
+	}
+});
 script.setScriptFile('./example.html');
 console.log(script.render());
 ```
@@ -51,7 +60,6 @@ Output
 	<head>
 	<body>
 		<ul>
-			
 						<li>#0</li>
 						<li>#1</li>
 						<li>#2</li>
@@ -135,7 +143,7 @@ Options
 
 ```
 
-Notice that I used `jshtml`, but the help says `js-html`. You can use both as they are both registered to the same command. This was done to since the project name is registered as `js-html`, but refered to as `jshtml`.
+Notice that I used `jshtml`, but the help says `js-html`. You can use both as they are both registered to the same command. This was done to since the project name is registered as `js-html`, but referred to as `jshtml`.
 
 ****
 How It Works
@@ -167,14 +175,12 @@ npm install js-html
 
 **git**
 ```Bash
-git clone https://github.com/bryanwayb/js-html.git
-cd js-html
-npm install
+git clone https://github.com/bryanwayb/js-html.git && cd js-html && npm install
 ```
 ****
 Running Tests And Benchmark
 ==
-JsHtml has been configured for numerous tests to test compatibility with a specific NodeJS version. These test not only ensure basic functionality will be available, but also security in sepearation of contexts.
+JsHtml has been configured for numerous tests to test compatibility with a specific NodeJS version. These test not only ensure basic functionality will be available, but also security in separation of contexts.
 
 If you would like to run these tests run the below command while in the modules root directory:
 ```bash

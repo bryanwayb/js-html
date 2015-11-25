@@ -146,12 +146,12 @@ Options
 
 ```
 
-Notice that I used `jshtml`, but the help says `js-html`. You can use both as they are both registered to the same command. This was done to since the project name is registered as `js-html`, but referred to as `jshtml`.
+Notice that I used `jshtml`, but the help says `js-html`. You can use both as they are both registered to the same command. This was done since the project name is registered as `js-html`, but referred to as `jshtml`.
 
 ****
 How It Works
 ==
-The engine itself is pretty simple, practically to the point where it's almost unfair to call it an engine at all and more of an extension library. There are 4 stages to rendering a script: compilation, context initialization, runtime compilation, lastly execution/rendering.
+The engine itself is pretty simple, practically to the point where it's almost unfair to call it an engine at all and more of an extension library. There are 4 stages to rendering a script: compilation, context initialization, runtime compilation, and lastly execution/rendering.
 
 Input scripts are compiled directly to JavaScript code, with the text sections being passed as strings to the `process.stdout.write` function. Take the following input:
 ```html

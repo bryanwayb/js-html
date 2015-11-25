@@ -14,11 +14,11 @@ Usage
 ==
 JsHtml script syntax is fairly straightforward.
 
-`<?js` opens a code block, `?>` closes it. A whitespace character *must* follow the opening tag, but it not required before the closing tag. (e.g. `<?jsvar test=0;?>` is invalid, but `<?js var test=0;?>` is okay).
+`<?js` opens a code block, `?>` closes it. A whitespace character *must* follow the opening tag, but is not required before the closing tag. (e.g. `<?jsvar test=0;?>` is invalid, but `<?js var test=0;?>` is okay).
 
 When a code block is only going to be used to output a variable you can use `<?js: ?>` syntax. Everything contained inside one of these blocks is directly passed to the output function. Spaces are *not required* for this open tag since `:` is used to separate the `<?js`tag and the code block.
 
-There are a few different methods provided of interfacing with JsHtml scripts. Here's one way showing a quick example of the engine is use:
+There are a few different methods provided of interfacing with JsHtml scripts. Here's one way showing a quick example of the engine in use:
 
 Template
 --
@@ -51,7 +51,7 @@ var script = jshtml.script({
 script.setScriptFile('./example.html');
 console.log(script.render());
 ```
-Output
+Render Output
 --
 ```html
 <html>
@@ -95,14 +95,17 @@ Options and their defaults:
 	optimize: false,
 	minify: false,
 	context: undefined,
-	filename: undefined
+	filename: undefined,
+	isolate: true
 }
 ```
-Probably the only options that needs explanation are `context` and `filename`.
+Probably the only options that need explanations are `context`, `filename`, and `isolate`.
 
 `context` expects an object and allows for passing of additional global variables that JsHtml scripts can use. This also allows for some scripts to share context objects, depending on what variables to make available to them.
 
 `filename` sets the name of the file to be used when running the JsHtml script. This should be set to an absolute path and is useful for scripts that require `__dirname` or `__filename` to be set.
+
+`isolate` is a bool that, when `true`, will execute the JsHtml script in a separate context from the calling context, at the cost of a slight amount of execution overhead by the JavaScript engine. If speed is important and context separation isn't a worry, you can disable this.
 
 **jshtml.script().setOptions(options)** - Set options (see above) for the `jshtml.script` object.
 
@@ -148,23 +151,25 @@ Notice that I used `jshtml`, but the help says `js-html`. You can use both as th
 ****
 How It Works
 ==
-The engine itself is pretty simple, practically to the point where it's almost unfair to call it an engine at all and more of an extension library. There are 3 stages to rendering a script: compilation, context initialization, and (obviously) rendering.
+The engine itself is pretty simple, practically to the point where it's almost unfair to call it an engine at all and more of an extension library. There are 4 stages to rendering a script: compilation, context initialization, runtime compilation, lastly execution/rendering.
 
 Input scripts are compiled directly to JavaScript code, with the text sections being passed as strings to the `process.stdout.write` function. Take the following input:
 ```html
-This is a "simple" <?js process.stdout.write('example');
+This <?js:'is'?> a "simple" <?js process.stdout.write('example');
 ```
-This get's compiled into:
+Without any post-compilation formatting, this get's compiled into:
 ```javascript
-process.stdout.write('This is a \"simple\" '); process.stdout.write('example');
+process.stdout.write(('This ')+('is')+(' a \"simple\" ')); process.stdout.write('example');
 ```
-The JavaScript sections go completely untouched. After the compilation, syntax errors are checked by default (although this can be disabled by setting the `jshtml.script()` object options).
+The JavaScript sections go completely untouched by the compiler. After the compilation, syntax errors are checked by default (although this can be disabled by setting the `jshtml.script()` object options).
 
-The next step is to create the execution context. Similar to how `require()` works, the JsHtml script object calls its `makeFunction()` method which will initialize the shimmed context for the script to execute. This makes it so the JsHtml script being executed will not have access to anything from the calling scope unless it is passed specifically. This also means that separate JsHtml scripts do not share a scope with each other unless they are given a shared context object.
+The next step is to create the execution context. Similar to how `require()` works, the JsHtml script object calls its `makeFunction()` method which will initialize the context for the script to execute in.
 
-After the context creation comes VM compilation. This is where the compiled script is turned from a script string into an executable JavaScript function. This is done using the `vm` functions provided by NodeJS. The context object that was created in the previous step is passed here so the returned function only has access to the given context.
+If the `isolate` option is set to `true`, the created context is the only scope the script is allowed to access. This makes it so the JsHtml script being executed will not have access to anything from the calling scope unless it is passed specifically. This also means that separate JsHtml scripts do not share a scope with each other unless they are given a shared context object.
 
-Finally, if the context generation and VM compilation is successful, the script can be executed and the rendered results returned.
+After the context creation comes VM compilation. This is where the compiled script is turned from a script string into an executable JavaScript function. This is done using the `vm` functions provided by NodeJS.
+
+Finally, if both context generation and VM compilation are successful, the script can be executed and the rendered results returned.
 ****
 Installing
 ==
@@ -181,6 +186,8 @@ git clone https://github.com/bryanwayb/js-html.git && cd js-html && npm install
 Running Tests And Benchmark
 ==
 JsHtml has been configured for numerous tests to test compatibility with a specific NodeJS version. These test not only ensure basic functionality will be available, but also security in separation of contexts.
+
+**Note:** NodeJS version 0.11.6 and lower fail tests because contexts are not properly separated in those versions. Passing the `{ isolate: true }` will not yield the expected results. This problem was fixed in 0.11.7 and later.
 
 If you would like to run these tests run the below command while in the modules root directory:
 ```bash

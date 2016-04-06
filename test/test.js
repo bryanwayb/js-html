@@ -175,6 +175,47 @@ module.exports = {
 
         test.done();
     },
+    'JsHtml Async Functions': function(test) { // Test all the async based functions
+        var count = 0,
+            queueCount = 0;
+        function queueComplete() {
+            if(++count >= queueCount) {
+                test.done();
+            }
+        }
+
+        function queue(func) {
+            queueCount++;
+            process.nextTick(func);
+        }
+
+        queue(function() {
+            var script = jsHtml.script('<?js this.complete(); ?>');
+            script.render(function(rendered) {
+                test.notEqual(rendered, null, 'Async callback parameter should contain rendered script');
+                test.equal(rendered, '', 'This async callback parameter should return an empty string');
+                queueComplete();
+            });
+        });
+
+        queue(function() {
+            var script = jsHtml.script('Hello<?js this.complete(); ?>, World');
+            script.render(function(rendered) {
+                test.equal(rendered, 'Hello', 'Async scripts should stop processing where this.complete() is called');
+                queueComplete();
+            });
+        });
+
+        queue(function() {
+            var script = jsHtml.script('Hello<?js process.nextTick(function() { this.complete(); }); ?>, World');
+            script.render(function(rendered) {
+                test.equal(rendered, 'Hello, World', 'Async scripts should not stop processing when this.complete() is called from a queued task');
+                queueComplete();
+            });
+        });
+
+        test.expect(4);
+    },
     'API Interface Use': function(test) {
         test.doesNotThrow(function() {
             var rendered = jsHtml.cached('test').render();

@@ -24,6 +24,7 @@ if(args.h || args.help || (process.argv.length <= 2 && process.stdin.isTTY)) {
             Options: {
                 options: {
                     '-r, --render': 'Render the compiled output instead of stopping after compilation.',
+                    '-a, --async': 'Render the JsHtml script asynchronously.',
                     '-o, --out': 'Write output to file instead of stdout.',
                     '--syntax': 'Enables syntax checking.',
                     '--format': 'By default compiled code has no formatting applied. This switch enables formatting. Implies --syntax.',
@@ -66,7 +67,16 @@ var render = args.r || args.render,
 function processScript() {
     try {
         if(render) {
-            outputStream.write(script.render() + '\n');
+            if(args.a || args.async) {
+                process.nextTick(function() {
+                    script.render(function(rendered) {
+                        outputStream.write(rendered + '\n');
+                    });
+                });
+            }
+            else {
+                outputStream.write(script.render() + '\n');
+            }
         }
         else {
             outputStream.write(beforeCompile + script.compile() + afterCompile + '\n');

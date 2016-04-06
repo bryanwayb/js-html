@@ -79,7 +79,7 @@ API
 ==
 **jshtml.compile(script)** - Takes input JsHtml script string and returns JavaScript string.
 
-**jshtml.render(script, [options])** - Quick method for rendering JsHtml script. *This should only be used for one time uses.* If a script will be called multiple times use the `jshtml.script` object instead (see below).
+**jshtml.render(script, [options], [callback])** - Quick method for rendering JsHtml script. *This should only be used for one time uses.* If a script will be called multiple times use the `jshtml.script` object instead (see below).
 
 **jshtml.cache([cache], script, [options])** - This is the same as **jshtml.script()** below, except when you'd rather not manage the script objects yourself. Returns a `jshtml.script` object.
 
@@ -117,9 +117,18 @@ Probably the only options that need explanations are `context`, `filename`, and 
 
 **jshtml.script().compile()** - Similar to **jshtml.compile()**, except this will be cached and adds a few more options to be used along with it (such as reformatting script output, minification, etc...).
 
-**jshtml.script().makeFunction()** - This will compile the currently set script (if it hasn't been already), create a context (again, if it hasn't), and will return a function that can be called to render the compiled script.
+**jshtml.script().makeFunction()** - This will compile the currently set script (if it hasn't been already), create a context (again, if it hasn't), and will return `function([callback])` that can be called to render the compiled script.
 
-**jshtml.script().render()** - A shortcut for calling the function returned by **jshtml.script().makeFunction()**. 
+If a callback parameter isn't supplied, the script will be ran synchronously and the return value will be the rendered script. Conversely, passing a callback with an argument for the rendered string will set the script to be ran asynchronously. JsHtml scripts that run asynchronously will need to call `this.complete();` when they are finished rendering. Otherwise the callbacks will never be returned.
+
+Here's a simple example with an async JsHtml script:
+```
+Hello<?js process.nextTick(function() {
+    this.complete();
+}); ?>, World
+```
+
+**jshtml.script().render([callback])** - A shortcut for calling `function([callback])` returned by **jshtml.script().makeFunction()**. 
 
 ****
 CLI Usage
